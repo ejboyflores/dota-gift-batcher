@@ -626,7 +626,7 @@ with main_tab_batcher:
         with c1:
             raw_input = st.text_area("Copy and paste your entire Notepad file here (`Name - 1`):", key="notepad_queue", height=160)
         with c2:
-            default_treasure = st.text_input("Treasure / Event Name", value="Trove of Terror")
+            default_treasure = st.text_input("Treasure / Event Name", value="")
             max_gifts = st.number_input("Steam Daily Gift Limit (Max 8)", min_value=1, max_value=20, value=8)
             split_multi_to_bottom = st.checkbox("✅ Fair Queue Mode: Split '- 2' into separate turns", value=True, help="Gives 1 skin now and moves extra wins to the bottom of the line so nobody cuts the queue.")
 
