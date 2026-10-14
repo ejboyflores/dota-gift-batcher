@@ -389,12 +389,17 @@ with main_tab_wheel:
         st.divider()
         st.subheader("🎁 2. Normal Spin Prize Setup")
         normal_prize = st.text_input("Item to Give (Normal Spin):", value="Trove of Terror", key="normal_prize_input")
-        st.caption("When the winner is picked, their name and this item will automatically be queued together.")
+        st.caption("When the winner is picked, clicking the button below will automatically append their name, quantity, and this item into your queue!")
 
         st.divider()
         st.subheader("🏆 3. Quick-Add Winner to Queue")
-        st.caption("When the wheel stops, type or paste the winner's name below to automatically add **`Name - 1 - [Prize]`** to your Notepad list!")
+        
+        # Streamlit text input linked to session state so Javascript can populate it automatically!
+        if "normal_win_box" not in st.session_state:
+            st.session_state.normal_win_box = ""
+
         new_winner = st.text_input("Winner Name:", placeholder="e.g. Juan Dela Cruz", key="normal_win_box")
+        
         if st.button("➕ Add Winner to Bottom of Queue", type="primary", use_container_width=True, key="normal_add_btn"):
             if new_winner.strip():
                 item_to_add = normal_prize.strip() if normal_prize.strip() else "1"
@@ -436,9 +441,12 @@ with main_tab_wheel:
                 <button onclick="stopAndReset()" style="background: #475569; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">⏹ Stop</button>
             </div>
 
-            <div style="margin-top: 10px; min-height: 36px;">
+            <div style="margin-top: 10px; min-height: 36px; display: flex; gap: 10px; align-items: center;">
+                <button onclick="autoFillWinner()" id="autoFillBtn" style="background: #16a34a; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; display: none;">
+                    ⚡ Auto-Fill Winner into Box #3
+                </button>
                 <button onclick="removeLastWinner()" id="removeBtn" style="background: #334155; color: #f8fafc; border: 1px solid #64748b; padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; display: none;">
-                    ❌ Remove Winner from Wheel for Next Spin
+                    ❌ Remove Winner from Wheel
                 </button>
             </div>
         </div>
@@ -452,6 +460,7 @@ with main_tab_wheel:
         let isSpinning = false;
         let animId = null;
         let lastWinnerIndex = -1;
+        let lastWinnerName = "";
         let sharedAudioCtx = null;
 
         function toggleFullscreen(elementId) {{
@@ -538,6 +547,7 @@ with main_tab_wheel:
             if (isSpinning || names.length === 0) return;
             isSpinning = true;
             document.getElementById("removeBtn").style.display = "none";
+            document.getElementById("autoFillBtn").style.display = "none";
             document.getElementById("winner_banner").style.color = "#38bdf8";
 
             const duration = seconds * 1000;
@@ -575,9 +585,11 @@ with main_tab_wheel:
                     isSpinning = false;
                     document.getElementById("spin_timer").innerText = "00:00";
                     lastWinnerIndex = currentSlice;
-                    const winner = names[lastWinnerIndex];
+                    lastWinnerName = names[lastWinnerIndex];
                     document.getElementById("winner_banner").style.color = "#4ade80";
-                    document.getElementById("winner_banner").innerText = "🎉 WINNER: " + winner + "!";
+                    document.getElementById("winner_banner").innerText = "🎉 WINNER: " + lastWinnerName + "!";
+                    
+                    document.getElementById("autoFillBtn").style.display = "inline-block";
                     if (names.length > 1) {{
                         document.getElementById("removeBtn").style.display = "inline-block";
                     }}
@@ -586,6 +598,18 @@ with main_tab_wheel:
                 }}
             }}
             animId = requestAnimationFrame(animate);
+        }}
+
+        function autoFillWinner() {{
+            if (!lastWinnerName) return;
+            // Find the Streamlit text input box for the winner name and fill it automatically
+            const docInputs = window.parent.document.querySelectorAll('input[aria-label="Winner Name"]');
+            for (let input of docInputs) {{
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, "value").set;
+                nativeInputValueSetter.call(input, lastWinnerName);
+                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            }}
+            document.getElementById("winner_banner").innerText = "✅ Auto-filled " + lastWinnerName + " into Box #3!";
         }}
 
         function stopAndReset() {{
@@ -601,6 +625,7 @@ with main_tab_wheel:
                 names.splice(lastWinnerIndex, 1);
                 lastWinnerIndex = -1;
                 document.getElementById("removeBtn").style.display = "none";
+                document.getElementById("autoFillBtn").style.display = "none";
                 document.getElementById("winner_banner").innerText = "✅ Winner removed from wheel!";
                 drawWheel();
             }}
