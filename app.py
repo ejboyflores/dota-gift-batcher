@@ -45,12 +45,11 @@ Paul Panganoron - 1"""
 if "notepad_queue" not in st.session_state:
     st.session_state.notepad_queue = default_text
 
-default_wheel_names = """Viewer 1
+default_wheel_names = """Adrian Libres
 Joseph Estobo
 Julius Durango
 Ren Ren
 Mark louie
-Adrian Libres
 Eijie Agodera
 Mardion Lloyd
 Jayson Eunchica
