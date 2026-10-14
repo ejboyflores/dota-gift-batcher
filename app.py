@@ -8,7 +8,6 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Dota 2 Gift Studio", page_icon="🎁", layout="wide")
 
-# Clean modern CSS styling
 st.markdown(
     """
     <style>
@@ -25,10 +24,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Header Banner
 st.title("🎁 Paul's Dota 2 Giveaway & Gifting Studio")
 
-# Initialize Session State for Notepad Queue
 default_text = """Trove of Terror
 
 Joseph Estobo - 1
@@ -60,7 +57,6 @@ Viewer 6
 Viewer 7
 Viewer 8"""
 
-# --- TOP-LEVEL NAVIGATION TABS (NOW WITH 3RD TAB FOR LAST MAN STANDING) ---
 main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
     "📦 1. Post-Stream Gift Batcher (8/Day Queue)",
     "🎡 2. Normal Spin the Wheel (1 Spin = Winner)",
@@ -68,7 +64,7 @@ main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
 ])
 
 # ==============================================================================
-# TAB 3: LAST MAN STANDING (ELIMINATION WHEEL FOR ARCANA / EXPENSIVE SKINS)
+# TAB 3: LAST MAN STANDING (WITH FULLSCREEN BUTTON)
 # ==============================================================================
 with main_tab_lms:
     lms_left, lms_right = st.columns([1, 1.65], gap="large")
@@ -77,7 +73,7 @@ with main_tab_lms:
         st.subheader("👑 Main Event Setup")
         arcana_prize = st.text_input(
             "Grand Prize Name (Shown on Banner):",
-            value=" Manifold Paradox (PA Arcana)",
+            value="Manifold Paradox (PA Arcana)",
         )
         lms_raw = st.text_area(
             "Paste Finalists / Participants (1 per line):",
@@ -118,20 +114,22 @@ with main_tab_lms:
         lms_json = json.dumps(
             lms_participants if len(lms_participants) >= 2 else ["Player 1", "Player 2"]
         )
-        prize_json = json.dumps(arcana_prize.strip())
 
         lms_html = f"""
-        <div style="background: linear-gradient(145deg, #1a0b0e, #2a1215); padding: 18px; border-radius: 16px; border: 2px solid #b91c1c; color: white; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 12px 30px rgba(185,28,28,0.25);">
+        <div id="lmsFullscreenContainer" style="background: linear-gradient(145deg, #1a0b0e, #2a1215); padding: 18px; border-radius: 16px; border: 2px solid #b91c1c; color: white; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 12px 30px rgba(185,28,28,0.25);">
             
-            <!-- Grand Prize Header -->
+            <!-- Grand Prize Header & Fullscreen Button -->
             <div style="display: flex; justify-content: space-between; align-items: center; background: #0f0507; padding: 10px 16px; border-radius: 10px; border: 1px solid #7f1d1d; margin-bottom: 12px;">
                 <div>
                     <div style="font-size: 11px; color: #fca5a5; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">🔥 LAST MAN STANDING — GRAND PRIZE:</div>
                     <div style="font-size: 18px; font-weight: 900; color: #fde047;">🏆 {arcana_prize}</div>
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 11px; color: #94a3b8; font-weight: bold;">ALIVE</div>
-                    <div id="alive_counter" style="font-size: 22px; font-weight: 900; color: #4ade80;">{len(lms_participants)}</div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div style="text-align: right;">
+                        <div style="font-size: 10px; color: #94a3b8; font-weight: bold;">ALIVE</div>
+                        <div id="alive_counter" style="font-size: 20px; font-weight: 900; color: #4ade80;">{len(lms_participants)}</div>
+                    </div>
+                    <button onclick="toggleFullscreen('lmsFullscreenContainer')" style="background: #334155; color: white; border: 1px solid #64748b; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;" title="Toggle Fullscreen">⛶ Fullscreen</button>
                 </div>
             </div>
 
@@ -198,17 +196,27 @@ with main_tab_lms:
         let autoTimeout = null;
         let audioCtx = null;
 
-        function getAudio() {{
-            if (!audioCtx) {{
+        function toggleFullscreen(elementId) {
+            const elem = document.getElementById(elementId);
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
+
+        function getAudio() {
+            if (!audioCtx) {
                 const AC = window.AudioContext || window.webkitAudioContext;
                 audioCtx = new AC();
-            }}
+            }
             if (audioCtx.state === 'suspended') audioCtx.resume();
             return audioCtx;
-        }}
+        }
 
-        function playSound(freq, dur, type="sine", vol=0.1) {{
-            try {{
+        function playSound(freq, dur, type="sine", vol=0.1) {
+            try {
                 const ac = getAudio();
                 const osc = ac.createOscillator();
                 const gain = ac.createGain();
@@ -219,17 +227,16 @@ with main_tab_lms:
                 gain.connect(ac.destination);
                 osc.start();
                 osc.stop(ac.currentTime + dur / 1000);
-            }} catch(e) {{}}
-        }}
+            } catch(e) {}
+        }
 
-        function drawLmsWheel() {{
+        function drawLmsWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const num = alive.length;
             const center = canvas.width / 2;
             const radius = center - 6;
 
-            if (num === 1) {{
-                // Draw Champion Gold Circle
+            if (num === 1) {
                 ctx.beginPath();
                 ctx.fillStyle = "#eab308";
                 ctx.arc(center, center, radius, 0, 2 * Math.PI);
@@ -245,10 +252,10 @@ with main_tab_lms:
                 ctx.font = "900 26px sans-serif";
                 ctx.fillText(alive[0], center, center + 24);
                 return;
-            }}
+            }
 
             const arc = (2 * Math.PI) / num;
-            for (let i = 0; i < num; i++) {{
+            for (let i = 0; i < num; i++) {
                 const angle = currentAngle + i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = lmsColors[i % lmsColors.length];
@@ -269,7 +276,7 @@ with main_tab_lms:
                 let label = alive[i].length > 16 ? alive[i].substring(0, 14) + ".." : alive[i];
                 ctx.fillText(label, radius - 14, 5);
                 ctx.restore();
-            }}
+            }
 
             ctx.beginPath();
             ctx.fillStyle = "#0f0507";
@@ -278,28 +285,27 @@ with main_tab_lms:
             ctx.strokeStyle = "#fde047";
             ctx.lineWidth = 3;
             ctx.stroke();
-        }}
+        }
 
-        function updateGraveyardUI() {{
+        function updateGraveyardUI() {
             document.getElementById("alive_counter").innerText = alive.length;
             const listEl = document.getElementById("graveyard_list");
-            if (graveyard.length === 0) {{
+            if (graveyard.length === 0) {
                 listEl.innerHTML = '<div style="color: #64748b; font-style: italic; font-size: 12px;">No eliminations yet...</div>';
                 return;
-            }}
+            }
             listEl.innerHTML = graveyard.map(item => 
                 `<div style="background: #1f090d; padding: 5px 8px; border-radius: 5px; border-left: 3px solid #ef4444; display: flex; justify-content: space-between;">
-                    <span style="text-decoration: line-through; color: #fca5a5;">💀 ${{item.name}}</span>
-                    <span style="color: #94a3b8; font-size: 11px; font-weight: bold;">#${{item.rank}}</span>
+                    <span style="text-decoration: line-through; color: #fca5a5;">💀 ${item.name}</span>
+                    <span style="color: #94a3b8; font-size: 11px; font-weight: bold;">#${item.rank}</span>
                 </div>`
             ).join("");
-        }}
+        }
 
-        function spinEliminate(seconds) {{
+        function spinEliminate(seconds) {
             if (isSpinning || alive.length <= 1) return;
             isSpinning = true;
 
-            // If only 2 players left, make it a dramatic Final 1v1!
             const actualSec = (alive.length === 2 && seconds < 8) ? 6 : seconds;
             const duration = actualSec * 1000;
             const baseRotations = actualSec * 2.3 + Math.random() * 4;
@@ -311,7 +317,7 @@ with main_tab_lms:
             const banner = document.getElementById("lms_banner");
             banner.style.color = "#fef08a";
 
-            function animate(now) {{
+            function animate(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const easeOut = 1 - Math.pow(1 - progress, 4);
@@ -324,26 +330,24 @@ with main_tab_lms:
 
                 banner.innerText = "🎯 In Danger: " + alive[currentSlice] + "...";
 
-                if (currentSlice !== lastSlice && progress < 0.995) {{
+                if (currentSlice !== lastSlice && progress < 0.995) {
                     playSound(480, 20, "triangle", 0.08);
                     lastSlice = currentSlice;
-                }}
+                }
 
-                if (progress < 1) {{
+                if (progress < 1) {
                     animId = requestAnimationFrame(animate);
-                }} else {{
+                } else {
                     isSpinning = false;
                     const eliminatedName = alive[currentSlice];
                     const finishRank = alive.length;
 
-                    // Remove from alive and add to top of graveyard
                     alive.splice(currentSlice, 1);
-                    graveyard.unshift({{ name: eliminatedName, rank: finishRank }});
+                    graveyard.unshift({ name: eliminatedName, rank: finishRank });
                     updateGraveyardUI();
                     drawLmsWheel();
 
-                    if (alive.length === 1) {{
-                        // WE HAVE A GRAND CHAMPION!
+                    if (alive.length === 1) {
                         autoMode = false;
                         document.getElementById("autoBtn").innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
                         banner.style.background = "#14532d";
@@ -354,38 +358,38 @@ with main_tab_lms:
                         setTimeout(() => playSound(659, 150, "sine", 0.15), 160);
                         setTimeout(() => playSound(784, 150, "sine", 0.15), 320);
                         setTimeout(() => playSound(1046, 450, "sine", 0.2), 480);
-                    }} else {{
+                    } else {
                         banner.style.color = "#f87171";
                         banner.innerText = "💀 ELIMINATED: " + eliminatedName + " (#" + finishRank + " Place) — " + alive.length + " Left!";
                         playSound(190, 300, "sawtooth", 0.12);
 
-                        if (autoMode && alive.length > 1) {{
-                            autoTimeout = setTimeout(() => {{
+                        if (autoMode && alive.length > 1) {
+                            autoTimeout = setTimeout(() => {
                                 if (autoMode) spinEliminate(3);
-                            }}, 2200);
-                        }}
-                    }}
-                }}
-            }}
+                            }, 2200);
+                        }
+                    }
+                }
+            }
             animId = requestAnimationFrame(animate);
-        }}
+        }
 
-        function toggleAutoRoyale() {{
+        function toggleAutoRoyale() {
             if (alive.length <= 1) return;
             autoMode = !autoMode;
             const btn = document.getElementById("autoBtn");
-            if (autoMode) {{
+            if (autoMode) {
                 btn.innerText = "⏸ PAUSE AUTO-ROYALE";
                 btn.style.background = "#dc2626";
                 if (!isSpinning) spinEliminate(3);
-            }} else {{
+            } else {
                 btn.innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
                 btn.style.background = "linear-gradient(90deg, #9333ea, #db2777)";
                 if (autoTimeout) clearTimeout(autoTimeout);
-            }}
-        }}
+            }
+        }
 
-        function resetArena() {{
+        function resetArena() {
             if (animId) cancelAnimationFrame(animId);
             if (autoTimeout) clearTimeout(autoTimeout);
             isSpinning = false;
@@ -401,7 +405,7 @@ with main_tab_lms:
             banner.innerText = "💀 Arena Reset! Whoever the arrow lands on is ELIMINATED!";
             updateGraveyardUI();
             drawLmsWheel();
-        }}
+        }
 
         drawLmsWheel();
         </script>
@@ -409,7 +413,7 @@ with main_tab_lms:
         components.html(lms_html, height=555)
 
 # ==============================================================================
-# TAB 2: NORMAL LIVE STREAM SPIN THE WHEEL (WITH 30s & 1 MIN TIMERS)
+# TAB 2: NORMAL LIVE STREAM SPIN THE WHEEL (WITH FULLSCREEN BUTTON)
 # ==============================================================================
 with main_tab_wheel:
     w_left, w_right = st.columns([1, 1.55], gap="large")
@@ -453,14 +457,17 @@ with main_tab_wheel:
     with w_right:
         names_json = json.dumps(participants if participants else ["Add Names"])
         wheel_html = f"""
-        <div style="background: linear-gradient(145deg, #0f172a, #1e293b); padding: 20px; border-radius: 16px; border: 1px solid #334155; color: white; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
+        <div id="normalFullscreenContainer" style="background: linear-gradient(145deg, #0f172a, #1e293b); padding: 20px; border-radius: 16px; border: 1px solid #334155; color: white; font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
             
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #090d16; padding: 10px 18px; border-radius: 10px; border: 1px solid #1e293b; margin-bottom: 14px; box-sizing: border-box;">
                 <div id="winner_banner" style="font-size: 18px; font-weight: 800; color: #facc15;">
                     🎰 Select spin duration below!
                 </div>
-                <div id="spin_timer" style="font-size: 20px; font-weight: 900; color: #38bdf8; font-variant-numeric: tabular-nums; background: #1e293b; padding: 4px 12px; border-radius: 6px;">
-                    00:00
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div id="spin_timer" style="font-size: 18px; font-weight: 900; color: #38bdf8; font-variant-numeric: tabular-nums; background: #1e293b; padding: 4px 10px; border-radius: 6px;">
+                        00:00
+                    </div>
+                    <button onclick="toggleFullscreen('normalFullscreenContainer')" style="background: #334155; color: white; border: 1px solid #64748b; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;" title="Toggle Fullscreen">⛶ Fullscreen</button>
                 </div>
             </div>
 
@@ -508,19 +515,29 @@ with main_tab_wheel:
         let lastWinnerIndex = -1;
         let sharedAudioCtx = null;
 
-        function getAudioCtx() {{
-            if (!sharedAudioCtx) {{
+        function toggleFullscreen(elementId) {
+            const elem = document.getElementById(elementId);
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
+
+        function getAudioCtx() {
+            if (!sharedAudioCtx) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 sharedAudioCtx = new AudioContext();
-            }}
-            if (sharedAudioCtx.state === 'suspended') {{
+            }
+            if (sharedAudioCtx.state === 'suspended') {
                 sharedAudioCtx.resume();
-            }}
+            }
             return sharedAudioCtx;
-        }}
+        }
 
-        function playTick(freq, dur) {{
-            try {{
+        function playTick(freq, dur) {
+            try {
                 const audioCtx = getAudioCtx();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -530,17 +547,17 @@ with main_tab_wheel:
                 gain.connect(audioCtx.destination);
                 osc.start();
                 osc.stop(audioCtx.currentTime + dur / 1000);
-            }} catch(e) {{}}
-        }}
+            } catch(e) {}
+        }
 
-        function drawWheel() {{
+        function drawWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const num = names.length;
             const arc = (2 * Math.PI) / num;
             const center = canvas.width / 2;
             const radius = center - 8;
 
-            for (let i = 0; i < num; i++) {{
+            for (let i = 0; i < num; i++) {
                 const angle = currentAngle + i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = colors[i % colors.length];
@@ -561,7 +578,7 @@ with main_tab_wheel:
                 let label = names[i].length > 17 ? names[i].substring(0, 15) + ".." : names[i];
                 ctx.fillText(label, radius - 14, 5);
                 ctx.restore();
-            }}
+            }
 
             ctx.beginPath();
             ctx.fillStyle = "#0f172a";
@@ -570,15 +587,15 @@ with main_tab_wheel:
             ctx.strokeStyle = "#f8fafc";
             ctx.lineWidth = 3;
             ctx.stroke();
-        }}
+        }
 
-        function formatTime(sec) {{
+        function formatTime(sec) {
             const m = String(Math.floor(sec / 60)).padStart(2, '0');
             const s = String(Math.ceil(sec % 60)).padStart(2, '0');
             return m + ":" + s;
-        }}
+        }
 
-        function spinWheel(seconds) {{
+        function spinWheel(seconds) {
             if (isSpinning || names.length === 0) return;
             isSpinning = true;
             document.getElementById("removeBtn").style.display = "none";
@@ -591,7 +608,7 @@ with main_tab_wheel:
             const startTime = performance.now();
             let lastSlice = -1;
 
-            function animate(now) {{
+            function animate(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const remainingSec = Math.max(0, (duration - elapsed) / 1000);
@@ -608,47 +625,47 @@ with main_tab_wheel:
 
                 document.getElementById("winner_banner").innerText = "👉 " + names[currentSlice];
 
-                if (currentSlice !== lastSlice && progress < 0.995) {{
+                if (currentSlice !== lastSlice && progress < 0.995) {
                     playTick(540, 20);
                     lastSlice = currentSlice;
-                }}
+                }
 
-                if (progress < 1) {{
+                if (progress < 1) {
                     animId = requestAnimationFrame(animate);
-                }} else {{
+                } else {
                     isSpinning = false;
                     document.getElementById("spin_timer").innerText = "00:00";
                     lastWinnerIndex = currentSlice;
                     const winner = names[lastWinnerIndex];
                     document.getElementById("winner_banner").style.color = "#4ade80";
                     document.getElementById("winner_banner").innerText = "🎉 WINNER: " + winner + "!";
-                    if (names.length > 1) {{
+                    if (names.length > 1) {
                         document.getElementById("removeBtn").style.display = "inline-block";
-                    }}
+                    }
                     playTick(587, 120);
                     setTimeout(() => playTick(880, 350), 150);
-                }}
-            }}
+                }
+            }
             animId = requestAnimationFrame(animate);
-        }}
+        }
 
-        function stopAndReset() {{
+        function stopAndReset() {
             if (animId) cancelAnimationFrame(animId);
             isSpinning = false;
             document.getElementById("spin_timer").innerText = "00:00";
             document.getElementById("winner_banner").style.color = "#facc15";
             document.getElementById("winner_banner").innerText = "⏹ Spin stopped. Ready!";
-        }}
+        }
 
-        function removeLastWinner() {{
-            if (lastWinnerIndex > -1 && names.length > 1) {{
+        function removeLastWinner() {
+            if (lastWinnerIndex > -1 && names.length > 1) {
                 names.splice(lastWinnerIndex, 1);
                 lastWinnerIndex = -1;
                 document.getElementById("removeBtn").style.display = "none";
                 document.getElementById("winner_banner").innerText = "✅ Winner removed from wheel!";
                 drawWheel();
-            }}
-        }}
+            }
+        }
 
         drawWheel();
         </script>
