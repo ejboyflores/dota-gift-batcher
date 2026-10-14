@@ -8,15 +8,39 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Dota 2 Gift Studio", page_icon="🎁", layout="wide")
 
+# --- EXPERT UI/UX STYLING OVERHAUL ---
 st.markdown("""
     <style>
-    .block-container { padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1400px; }
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
+    .block-container { padding-top: 1.5rem; padding-bottom: 3rem; max-width: 1450px; }
+    
+    /* Global Typography & Polish */
+    h1, h2, h3 { font-family: system-ui, -apple-system, sans-serif; letter-spacing: -0.3px; }
+    
+    /* Custom Tab Styling */
+    .stTabs [data-baseweb="tab-list"] { gap: 10px; background-color: #0b0f19; padding: 6px; border-radius: 12px; border: 1px solid #1e293b; }
     .stTabs [data-baseweb="tab"] {
-        height: 44px;
-        padding: 0px 18px;
-        border-radius: 8px 8px 0px 0px;
-        font-weight: 600;
+        height: 46px;
+        padding: 0px 22px;
+        border-radius: 8px;
+        font-weight: 700;
+        color: #94a3b8;
+        background-color: transparent;
+        transition: all 0.2s ease;
+    }
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Modern Card Containers */
+    .studio-card {
+        background: linear-gradient(145deg, #0f172a, #162032);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        margin-bottom: 16px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -63,13 +87,13 @@ Carl Villanueva
 Paul Panganoron"""
 
 main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
-    "📦 1. Post-Stream Gift Batcher (8/Day Queue)",
-    "🎡 2. Normal Spin the Wheel (1 Spin = Winner)",
-    "👑 3. Main Event: Last Man Standing (Arcana / Big Prize)"
+    "📦 1. Post-Stream Gift Batcher",
+    "🎡 2. Normal Spin the Wheel",
+    "👑 3. Last Man Standing (Arcana Arena)"
 ])
 
 # ==============================================================================
-# TAB 3: LAST MAN STANDING (WITH FULLSCREEN BUTTON)
+# TAB 3: LAST MAN STANDING
 # ==============================================================================
 with main_tab_lms:
     lms_left, lms_right = st.columns([1, 1.65], gap="large")
@@ -394,7 +418,6 @@ with main_tab_wheel:
         st.divider()
         st.subheader("🏆 3. Quick-Add Winner to Queue")
         
-        # Streamlit text input linked to session state so Javascript can populate it automatically!
         if "normal_win_box" not in st.session_state:
             st.session_state.normal_win_box = ""
 
@@ -602,7 +625,6 @@ with main_tab_wheel:
 
         function autoFillWinner() {{
             if (!lastWinnerName) return;
-            // Find the Streamlit text input box for the winner name and fill it automatically
             const docInputs = window.parent.document.querySelectorAll('input[aria-label="Winner Name"]');
             for (let input of docInputs) {{
                 const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, "value").set;
@@ -640,7 +662,15 @@ with main_tab_wheel:
 # TAB 1: POST-STREAM GIFT BATCHER
 # ==============================================================================
 with main_tab_batcher:
-    st.info("💡 **QUICK GUIDE:** **(Step 1)** Paste your Notepad list → **(Step 2)** Start the timer & uncheck **`Here?`** if a viewer is absent in chat → **(Step 3)** Gift today's 8 winners & copy tomorrow's updated Notepad list!")
+    # Polished Guide Banner replacing messy markdown styling
+    st.markdown("""
+        <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; color: #e2e8f0; font-size: 14px;">
+            <b>💡 QUICK STREAM GUIDE:</b> 
+            &nbsp;1️⃣ Paste Notepad List &nbsp;→&nbsp; 
+            2️⃣ Run Call-Out Timer & Check Attendance &nbsp;→&nbsp; 
+            3️⃣ Gift Batch 1 & Save Tomorrow's Backup!
+        </div>
+    """, unsafe_allow_html=True)
 
     with st.expander("📝 STEP 1: Paste Your Notepad List & Settings", expanded=False):
         c1, c2 = st.columns([2.5, 1.5])
@@ -701,11 +731,11 @@ with main_tab_batcher:
         st.subheader("🙋‍♂️ STEP 2: Chat Roll-Call")
 
         timer_html = """
-        <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 10px 16px; color: white; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: space-between;">
+        <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 18px; color: white; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
             <div>
-                <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">⏱️ Call-Out Timer</div>
-                <div id="display" style="font-size: 28px; font-weight: 900; color: #4ade80; font-variant-numeric: tabular-nums;">01:00</div>
-                <div id="status_text" style="font-size: 11px; color: #cbd5e1;">Click 30s or 1m when calling a viewer</div>
+                <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">⏱️ Call-Out Timer</div>
+                <div id="display" style="font-size: 26px; font-weight: 900; color: #4ade80; font-variant-numeric: tabular-nums;">01:00</div>
+                <div id="status_text" style="font-size: 11px; color: #cbd5e1;">Ready for next viewer call-out</div>
             </div>
             <div style="display: flex; gap: 6px;">
                 <button onclick="startTimer(30)" style="background: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">▶ 30s</button>
@@ -767,7 +797,7 @@ with main_tab_batcher:
         """
         components.html(timer_html, height=95)
 
-        st.caption("Uncheck **`Here?`** if they are absent (they move to #1 tomorrow). Double-click **`Skin Choice`** to type their hero skin!")
+        st.markdown("<p style='font-size: 13px; color: #94a3b8; margin-top: 8px;'>Uncheck <b>Here?</b> if they are absent (they move to #1 tomorrow). Double-click <b>Skin Choice</b> to type their custom hero skin!</p>", unsafe_allow_html=True)
 
         if not base_df.empty:
             rollcall_df = st.data_editor(
@@ -902,12 +932,15 @@ with main_tab_batcher:
             ])
 
             with tab_today:
-                st.info(
-                    "**Instructions:**\n"
-                    "1. Gift **ONLY these 8 people** in Dota 2 right now.\n"
-                    "2. Check **`Done?`** as you send each skin.\n"
-                    "3. Click **`2️⃣ Save for Tomorrow`** when finished!"
-                )
+                st.markdown("""
+                    <div style="background: #1e293b; padding: 12px 16px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 12px; font-size: 13px; color: #cbd5e1;">
+                        <b>Instructions:</b><br>
+                        1. Gift <b>ONLY these 8 people</b> in Dota 2 right now.<br>
+                        2. Check <b>Done?</b> as you send each skin.<br>
+                        3. Click <b>2️⃣ Save for Tomorrow</b> when finished!
+                    </div>
+                """, unsafe_allow_html=True)
+                
                 st.data_editor(
                     today_df[["Gift #", "Viewer Name", "Qty", "Turn", "Skin to Send", "Done?"]],
                     hide_index=True,
@@ -917,12 +950,15 @@ with main_tab_batcher:
                 )
 
             with tab_notepad:
-                st.warning(
-                    "**⚠️ BEFORE CLOSING:**\n"
-                    "1. Click the **Copy icon** in the top-right corner of the black box below.\n"
-                    "2. Paste it into your `.txt` Notepad file and **Save**.\n"
-                    "3. Tomorrow, always add new winners at the **VERY BOTTOM** as `Name - 1`!"
-                )
+                st.markdown("""
+                    <div style="background: #451a03; padding: 12px 16px; border-radius: 8px; border: 1px solid #78350f; margin-bottom: 12px; font-size: 13px; color: #fef3c7;">
+                        <b>⚠️ BEFORE CLOSING:</b><br>
+                        1. Click the Copy icon in the top-right corner of the code box below.<br>
+                        2. Paste it into your <code>.txt</code> Notepad file and Save.<br>
+                        3. Tomorrow, add new winners at the very bottom as <code>Name - 1</code>!
+                    </div>
+                """, unsafe_allow_html=True)
+                
                 if rollover_text:
                     st.code(rollover_text, language="text")
                 else:
