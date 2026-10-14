@@ -58,7 +58,7 @@ Jayson Eunchica - 1
 Prince May - 2
 Xyr john - 1
 Ejboy flores - 1
-Edgardo Jr - 1
+Edgardo Flores Jr - 1
 Chito Dagreat - 2
 Ariel Marquez - 1
 Carl Villanueva - 1
@@ -77,11 +77,11 @@ Mardion Lloyd
 Jayson Eunchica
 Prince May
 Xyr john
-Ejboy flores
-Edgardo Jr
+Edgardo Flores Jr
 Chito Dagreat
 Ariel Marquez
 Carl Villanueva
+Ejboy flores
 Paul Panganoron"""
 
 main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
