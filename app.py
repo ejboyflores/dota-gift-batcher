@@ -395,31 +395,10 @@ with main_tab_wheel:
     w_left, w_right = st.columns([1, 1.55], gap="large")
 
     with w_left:
-        st.subheader("👥 1. Wheel Participants")
-        wheel_raw = st.text_area("Paste viewer names here (1 name per line):", value=default_wheel_names, height=240, key="normal_wheel_input")
+        st.subheader("👥 Wheel Participants")
+        wheel_raw = st.text_area("Paste viewer names here (1 name per line):", value=default_wheel_names, height=360, key="normal_wheel_input")
         participants = [p.strip() for p in wheel_raw.split("\n") if p.strip()]
         st.caption(f"🎯 Total viewers on wheel: **{len(participants)}**")
-
-        st.divider()
-        st.subheader("🎁 2. Normal Spin Prize Setup")
-        normal_prize = st.text_input("Item to Give (Normal Spin):", value="Trove of Terror", key="normal_prize_input")
-        st.caption("When the winner is picked, clicking the button below will automatically append their name, quantity, and this item into your queue!")
-
-        st.divider()
-        st.subheader("🏆 3. Quick-Add Winner to Queue")
-        
-        if "normal_win_box" not in st.session_state:
-            st.session_state.normal_win_box = ""
-
-        new_winner = st.text_input("Winner Name:", placeholder="e.g. Juan Dela Cruz", key="normal_win_box")
-        
-        if st.button("➕ Add Winner to Bottom of Queue", type="primary", use_container_width=True, key="normal_add_btn"):
-            if new_winner.strip():
-                item_to_add = normal_prize.strip() if normal_prize.strip() else "1"
-                st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{new_winner.strip()} - 1 - {item_to_add}"
-                st.success(f"✅ Added **{new_winner.strip()} - 1 - {item_to_add}** to the bottom of your Gifting Queue!")
-            else:
-                st.warning("Please enter a winner's name first.")
 
     with w_right:
         names_json = json.dumps(participants if participants else ["Add Names"])
@@ -428,7 +407,7 @@ with main_tab_wheel:
             
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #090d16; padding: 10px 18px; border-radius: 10px; border: 1px solid #1e293b; margin-bottom: 14px; box-sizing: border-box;">
                 <div id="winner_banner" style="font-size: 18px; font-weight: 800; color: #facc15;">
-                    🎰 Prize: {normal_prize} — Select spin duration below!
+                    🎰 Select spin duration below!
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <div id="spin_timer" style="font-size: 18px; font-weight: 900; color: #38bdf8; font-variant-numeric: tabular-nums; background: #1e293b; padding: 4px 10px; border-radius: 6px;">
@@ -455,9 +434,6 @@ with main_tab_wheel:
             </div>
 
             <div style="margin-top: 10px; min-height: 36px; display: flex; gap: 10px; align-items: center;">
-                <button onclick="autoFillWinner()" id="autoFillBtn" style="background: #16a34a; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; display: none;">
-                    ⚡ Auto-Fill Winner into Box #3
-                </button>
                 <button onclick="removeLastWinner()" id="removeBtn" style="background: #334155; color: #f8fafc; border: 1px solid #64748b; padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; display: none;">
                     ❌ Remove Winner from Wheel
                 </button>
@@ -473,7 +449,6 @@ with main_tab_wheel:
         let isSpinning = false;
         let animId = null;
         let lastWinnerIndex = -1;
-        let lastWinnerName = "";
         let sharedAudioCtx = null;
 
         function toggleFullscreen(elementId) {{
@@ -560,7 +535,6 @@ with main_tab_wheel:
             if (isSpinning || names.length === 0) return;
             isSpinning = true;
             document.getElementById("removeBtn").style.display = "none";
-            document.getElementById("autoFillBtn").style.display = "none";
             document.getElementById("winner_banner").style.color = "#38bdf8";
 
             const duration = seconds * 1000;
@@ -598,11 +572,9 @@ with main_tab_wheel:
                     isSpinning = false;
                     document.getElementById("spin_timer").innerText = "00:00";
                     lastWinnerIndex = currentSlice;
-                    lastWinnerName = names[lastWinnerIndex];
+                    const winner = names[lastWinnerIndex];
                     document.getElementById("winner_banner").style.color = "#4ade80";
-                    document.getElementById("winner_banner").innerText = "🎉 WINNER: " + lastWinnerName + "!";
-                    
-                    document.getElementById("autoFillBtn").style.display = "inline-block";
+                    document.getElementById("winner_banner").innerText = "🎉 WINNER: " + winner + "!";
                     if (names.length > 1) {{
                         document.getElementById("removeBtn").style.display = "inline-block";
                     }}
@@ -611,17 +583,6 @@ with main_tab_wheel:
                 }}
             }}
             animId = requestAnimationFrame(animate);
-        }}
-
-        function autoFillWinner() {{
-            if (!lastWinnerName) return;
-            const docInputs = window.parent.document.querySelectorAll('input[aria-label="Winner Name"]');
-            for (let input of docInputs) {{
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.parent.HTMLInputElement.prototype, "value").set;
-                nativeInputValueSetter.call(input, lastWinnerName);
-                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
-            }}
-            document.getElementById("winner_banner").innerText = "✅ Auto-filled " + lastWinnerName + " into Box #3!";
         }}
 
         function stopAndReset() {{
@@ -637,7 +598,6 @@ with main_tab_wheel:
                 names.splice(lastWinnerIndex, 1);
                 lastWinnerIndex = -1;
                 document.getElementById("removeBtn").style.display = "none";
-                document.getElementById("autoFillBtn").style.display = "none";
                 document.getElementById("winner_banner").innerText = "✅ Winner removed from wheel!";
                 drawWheel();
             }}
@@ -661,7 +621,7 @@ with main_tab_batcher:
         </div>
     """, unsafe_allow_html=True)
 
-    with st.expander("📝 STEP 1: Paste Your Notepad List & Settings", expanded=False):
+    with st.expander("📝 STEP 1: Paste Your Notepad List & Settings", expanded=True):
         c1, c2 = st.columns([2.5, 1.5])
         with c1:
             raw_input = st.text_area("Copy and paste your entire Notepad file here (`Name - 1`):", key="notepad_queue", height=160)
