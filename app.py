@@ -47,8 +47,7 @@ st.markdown("""
 
 st.title("🎁 Paul's Dota 2 Giveaway & Gifting Studio")
 
-default_text = """
-Joseph Estobo - 1
+default_text = """Joseph Estobo - 1
 Julius Durango - 1
 Ren Ren - 2
 Mark louie - 1
