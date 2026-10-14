@@ -98,7 +98,7 @@ with main_tab_lms:
 
     with lms_left:
         st.subheader("👑 Main Event Setup")
-        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Item Name", key="lms_arcana_input")
+        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Arcana of Choice", key="lms_arcana_input")
         lms_raw = st.text_area("Paste Finalists / Participants (1 per line):", value=default_wheel_names, height=320, key="lms_names_input")
         lms_participants = [p.strip() for p in lms_raw.split("\n") if p.strip()]
         st.caption(f"⚔️ Total Fighters Entering Arena: **{len(lms_participants)}** *(Every spin ELIMINATES 1 person until only 1 Champion remains!)*")
@@ -107,7 +107,7 @@ with main_tab_lms:
         lms_json = json.dumps(lms_participants if len(lms_participants) >= 2 else ["Player 1", "Player 2"])
         
         lms_html = f"""
-        <div id="lmsFullscreenContainer" style="background: linear-gradient(145deg, #1a0b0e, #2a1215); padding: 18px; border-radius: 16px; border: 2px solid #b91c1c; color: white; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 12px 30px rgba(185,28,28,0.25);">
+        <div id="lmsFullscreenContainer" style="background: linear-gradient(145deg, #1a0b0e, #2a1215); padding: 18px; border-radius: 16px; border: 2px solid #b91c1c; color: white; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 12px 30px rgba(185,28,28,0.25); position: relative;">
             
             <div style="display: flex; justify-content: space-between; align-items: center; background: #0f0507; padding: 10px 16px; border-radius: 10px; border: 1px solid #7f1d1d; margin-bottom: 12px;">
                 <div>
@@ -159,6 +159,7 @@ with main_tab_lms:
         const initialPlayers = {lms_json};
         let alive = [...initialPlayers];
         let graveyard = [];
+        let confettiParticles = [];
         const lmsColors = ["#dc2626", "#2563eb", "#16a34a", "#d97706", "#7c3aed", "#db2777", "#0891b2", "#4d7c0f"];
         
         const canvas = document.getElementById("lmsCanvas");
@@ -170,27 +171,27 @@ with main_tab_lms:
         let autoTimeout = null;
         let audioCtx = null;
 
-        function toggleFullscreen(elementId) {{
+        function toggleFullscreen(elementId) {
             const elem = document.getElementById(elementId);
-            if (!document.fullscreenElement) {{
-                if (elem.requestFullscreen) {{ elem.requestFullscreen(); }}
-                else if (elem.webkitRequestFullscreen) {{ elem.webkitRequestFullscreen(); }}
-            }} else {{
-                if (document.exitFullscreen) {{ document.exitFullscreen(); }}
-            }}
-        }}
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
 
-        function getAudio() {{
-            if (!audioCtx) {{
+        function getAudio() {
+            if (!audioCtx) {
                 const AC = window.AudioContext || window.webkitAudioContext;
                 audioCtx = new AC();
-            }}
+            }
             if (audioCtx.state === 'suspended') audioCtx.resume();
             return audioCtx;
-        }}
+        }
 
-        function playSound(freq, dur, type="sine", vol=0.1) {{
-            try {{
+        function playSound(freq, dur, type="sine", vol=0.1) {
+            try {
                 const ac = getAudio();
                 const osc = ac.createOscillator();
                 const gain = ac.createGain();
@@ -201,16 +202,30 @@ with main_tab_lms:
                 gain.connect(ac.destination);
                 osc.start();
                 osc.stop(ac.currentTime + dur / 1000);
-            }} catch(e) {{}}
-        }}
+            } catch(e) {}
+        }
 
-        function drawLmsWheel() {{
+        function triggerConfetti() {
+            for(let i=0; i<80; i++) {
+                confettiParticles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10 - 4,
+                    color: lmsColors[Math.floor(Math.random() * lmsColors.length)],
+                    size: Math.random() * 6 + 4,
+                    life: 100
+                });
+            }
+        }
+
+        function drawLmsWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const num = alive.length;
             const center = canvas.width / 2;
             const radius = center - 6;
 
-            if (num === 1) {{
+            if (num === 1) {
                 ctx.beginPath();
                 ctx.fillStyle = "#eab308";
                 ctx.arc(center, center, radius, 0, 2 * Math.PI);
@@ -226,10 +241,10 @@ with main_tab_lms:
                 ctx.font = "900 26px sans-serif";
                 ctx.fillText(alive[0], center, center + 24);
                 return;
-            }}
+            }
 
             const arc = (2 * Math.PI) / num;
-            for (let i = 0; i < num; i++) {{
+            for (let i = 0; i < num; i++) {
                 const angle = currentAngle + i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = lmsColors[i % lmsColors.length];
@@ -250,7 +265,7 @@ with main_tab_lms:
                 let label = alive[i].length > 16 ? alive[i].substring(0, 14) + ".." : alive[i];
                 ctx.fillText(label, radius - 14, 5);
                 ctx.restore();
-            }}
+            }
 
             ctx.beginPath();
             ctx.fillStyle = "#0f0507";
@@ -259,24 +274,24 @@ with main_tab_lms:
             ctx.strokeStyle = "#fde047";
             ctx.lineWidth = 3;
             ctx.stroke();
-        }}
+        }
 
-        function updateGraveyardUI() {{
+        function updateGraveyardUI() {
             document.getElementById("alive_counter").innerText = alive.length;
             const listEl = document.getElementById("graveyard_list");
-            if (graveyard.length === 0) {{
+            if (graveyard.length === 0) {
                 listEl.innerHTML = '<div style="color: #64748b; font-style: italic; font-size: 12px;">No eliminations yet...</div>';
                 return;
-            }}
+            }
             listEl.innerHTML = graveyard.map(item => 
                 `<div style="background: #1f090d; padding: 5px 8px; border-radius: 5px; border-left: 3px solid #ef4444; display: flex; justify-content: space-between;">
-                    <span style="text-decoration: line-through; color: #fca5a5;">💀 ${{item.name}}</span>
-                    <span style="color: #94a3b8; font-size: 11px; font-weight: bold;">#${{item.rank}}</span>
+                    <span style="text-decoration: line-through; color: #fca5a5;">💀 ${item.name}</span>
+                    <span style="color: #94a3b8; font-size: 11px; font-weight: bold;">#${item.rank}</span>
                 </div>`
             ).join("");
-        }}
+        }
 
-        function spinEliminate(seconds) {{
+        function spinEliminate(seconds) {
             if (isSpinning || alive.length <= 1) return;
             isSpinning = true;
 
@@ -291,7 +306,7 @@ with main_tab_lms:
             const banner = document.getElementById("lms_banner");
             banner.style.color = "#fef08a";
 
-            function animate(now) {{
+            function animate(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const easeOut = 1 - Math.pow(1 - progress, 4);
@@ -304,72 +319,74 @@ with main_tab_lms:
 
                 banner.innerText = "🎯 In Danger: " + alive[currentSlice] + "...";
 
-                if (currentSlice !== lastSlice && progress < 0.995) {{
+                if (currentSlice !== lastSlice && progress < 0.995) {
                     playSound(480, 20, "triangle", 0.08);
                     lastSlice = currentSlice;
-                }}
+                }
 
-                if (progress < 1) {{
+                if (progress < 1) {
                     animId = requestAnimationFrame(animate);
-                }} else {{
+                } else {
                     isSpinning = false;
                     const eliminatedName = alive[currentSlice];
                     const finishRank = alive.length;
 
                     alive.splice(currentSlice, 1);
-                    graveyard.unshift({{ name: eliminatedName, rank: finishRank }});
+                    graveyard.unshift({ name: eliminatedName, rank: finishRank });
                     updateGraveyardUI();
                     drawLmsWheel();
 
-                    if (alive.length === 1) {{
+                    if (alive.length === 1) {
                         autoMode = false;
                         document.getElementById("autoBtn").innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
                         banner.style.background = "#14532d";
                         banner.style.borderColor = "#4ade80";
                         banner.style.color = "#fde047";
                         banner.innerText = "👑 LAST MAN STANDING: " + alive[0] + " WINS THE ARCANA! 🎉";
+                        triggerConfetti();
                         playSound(523, 150, "sine", 0.15);
                         setTimeout(() => playSound(659, 150, "sine", 0.15), 160);
                         setTimeout(() => playSound(784, 150, "sine", 0.15), 320);
                         setTimeout(() => playSound(1046, 450, "sine", 0.2), 480);
-                    }} else {{
+                    } else {
                         banner.style.color = "#f87171";
                         banner.innerText = "💀 ELIMINATED: " + eliminatedName + " (#" + finishRank + " Place) — " + alive.length + " Left!";
                         playSound(190, 300, "sawtooth", 0.12);
 
-                        if (autoMode && alive.length > 1) {{
-                            autoTimeout = setTimeout(() => {{
+                        if (autoMode && alive.length > 1) {
+                            autoTimeout = setTimeout(() => {
                                 if (autoMode) spinEliminate(3);
-                            }}, 2200);
-                        }}
-                    }}
-                }}
-            }}
+                            }, 2200);
+                        }
+                    }
+                }
+            }
             animId = requestAnimationFrame(animate);
-        }}
+        }
 
-        function toggleAutoRoyale() {{
+        function toggleAutoRoyale() {
             if (alive.length <= 1) return;
             autoMode = !autoMode;
             const btn = document.getElementById("autoBtn");
-            if (autoMode) {{
+            if (autoMode) {
                 btn.innerText = "⏸ PAUSE AUTO-ROYALE";
                 btn.style.background = "#dc2626";
                 if (!isSpinning) spinEliminate(3);
-            }} else {{
+            } else {
                 btn.innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
                 btn.style.background = "linear-gradient(90deg, #9333ea, #db2777)";
                 if (autoTimeout) clearTimeout(autoTimeout);
-            }}
-        }}
+            }
+        }
 
-        function resetArena() {{
+        function resetArena() {
             if (animId) cancelAnimationFrame(animId);
             if (autoTimeout) clearTimeout(autoTimeout);
             isSpinning = false;
             autoMode = false;
             alive = [...initialPlayers];
             graveyard = [];
+            confettiParticles = [];
             document.getElementById("autoBtn").innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
             document.getElementById("autoBtn").style.background = "linear-gradient(90deg, #9333ea, #db2777)";
             const banner = document.getElementById("lms_banner");
@@ -379,7 +396,7 @@ with main_tab_lms:
             banner.innerText = "💀 Arena Reset! Whoever the arrow lands on is ELIMINATED!";
             updateGraveyardUI();
             drawLmsWheel();
-        }}
+        }
 
         drawLmsWheel();
         </script>
@@ -394,7 +411,22 @@ with main_tab_wheel:
 
     with w_left:
         st.subheader("👥 Wheel Participants")
-        wheel_raw = st.text_area("Paste viewer names here (1 name per line):", value=default_wheel_names, height=360, key="normal_wheel_input")
+        wheel_raw = st.text_area("Paste viewer names here (1 name per line):", value=default_wheel_names, height=330, key="normal_wheel_input")
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            if st.button("🔀 Shuffle Names", use_container_width=True):
+                lines = [l.strip() for l in wheel_raw.split("\n") if l.strip()]
+                import random
+                random.shuffle(lines)
+                st.session_state["normal_wheel_input"] = "\n".join(lines)
+                st.rerun()
+        with col_btn2:
+            if st.button("🔤 Sort Alphabetically", use_container_width=True):
+                lines = sorted([l.strip() for l in wheel_raw.split("\n") if l.strip()])
+                st.session_state["normal_wheel_input"] = "\n".join(lines)
+                st.rerun()
+
         participants = [p.strip() for p in wheel_raw.split("\n") if p.strip()]
         st.caption(f"🎯 Total viewers on wheel: **{len(participants)}**")
 
@@ -449,29 +481,29 @@ with main_tab_wheel:
         let lastWinnerIndex = -1;
         let sharedAudioCtx = null;
 
-        function toggleFullscreen(elementId) {{
+        function toggleFullscreen(elementId) {
             const elem = document.getElementById(elementId);
-            if (!document.fullscreenElement) {{
-                if (elem.requestFullscreen) {{ elem.requestFullscreen(); }}
-                else if (elem.webkitRequestFullscreen) {{ elem.webkitRequestFullscreen(); }}
-            }} else {{
-                if (document.exitFullscreen) {{ document.exitFullscreen(); }}
-            }}
-        }}
+            if (!document.fullscreenElement) {
+                if (elem.requestFullscreen) { elem.requestFullscreen(); }
+                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
 
-        function getAudioCtx() {{
-            if (!sharedAudioCtx) {{
+        function getAudioCtx() {
+            if (!sharedAudioCtx) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 sharedAudioCtx = new AudioContext();
-            }}
-            if (sharedAudioCtx.state === 'suspended') {{
+            }
+            if (sharedAudioCtx.state === 'suspended') {
                 sharedAudioCtx.resume();
-            }}
+            }
             return sharedAudioCtx;
-        }}
+        }
 
-        function playTick(freq, dur) {{
-            try {{
+        function playTick(freq, dur) {
+            try {
                 const audioCtx = getAudioCtx();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -481,17 +513,17 @@ with main_tab_wheel:
                 gain.connect(audioCtx.destination);
                 osc.start();
                 osc.stop(audioCtx.currentTime + dur / 1000);
-            }} catch(e) {{}}
-        }}
+            } catch(e) {}
+        }
 
-        function drawWheel() {{
+        function drawWheel() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const num = names.length;
             const arc = (2 * Math.PI) / num;
             const center = canvas.width / 2;
             const radius = center - 8;
 
-            for (let i = 0; i < num; i++) {{
+            for (let i = 0; i < num; i++) {
                 const angle = currentAngle + i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = colors[i % colors.length];
@@ -512,7 +544,7 @@ with main_tab_wheel:
                 let label = names[i].length > 17 ? names[i].substring(0, 15) + ".." : names[i];
                 ctx.fillText(label, radius - 14, 5);
                 ctx.restore();
-            }}
+            }
 
             ctx.beginPath();
             ctx.fillStyle = "#0f172a";
@@ -521,15 +553,15 @@ with main_tab_wheel:
             ctx.strokeStyle = "#f8fafc";
             ctx.lineWidth = 3;
             ctx.stroke();
-        }}
+        }
 
-        function formatTime(sec) {{
+        function formatTime(sec) {
             const m = String(Math.floor(sec / 60)).padStart(2, '0');
             const s = String(Math.ceil(sec % 60)).padStart(2, '0');
             return m + ":" + s;
-        }}
+        }
 
-        function spinWheel(seconds) {{
+        function spinWheel(seconds) {
             if (isSpinning || names.length === 0) return;
             isSpinning = true;
             document.getElementById("removeBtn").style.display = "none";
@@ -542,7 +574,7 @@ with main_tab_wheel:
             const startTime = performance.now();
             let lastSlice = -1;
 
-            function animate(now) {{
+            function animate(now) {
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const remainingSec = Math.max(0, (duration - elapsed) / 1000);
@@ -559,47 +591,47 @@ with main_tab_wheel:
 
                 document.getElementById("winner_banner").innerText = "👉 " + names[currentSlice];
 
-                if (currentSlice !== lastSlice && progress < 0.995) {{
+                if (currentSlice !== lastSlice && progress < 0.995) {
                     playTick(540, 20);
                     lastSlice = currentSlice;
-                }}
+                }
 
-                if (progress < 1) {{
+                if (progress < 1) {
                     animId = requestAnimationFrame(animate);
-                }} else {{
+                } else {
                     isSpinning = false;
                     document.getElementById("spin_timer").innerText = "00:00";
                     lastWinnerIndex = currentSlice;
                     const winner = names[lastWinnerIndex];
                     document.getElementById("winner_banner").style.color = "#4ade80";
                     document.getElementById("winner_banner").innerText = "🎉 WINNER: " + winner + "!";
-                    if (names.length > 1) {{
+                    if (names.length > 1) {
                         document.getElementById("removeBtn").style.display = "inline-block";
-                    }}
+                    }
                     playTick(587, 120);
                     setTimeout(() => playTick(880, 350), 150);
-                }}
-            }}
+                }
+            }
             animId = requestAnimationFrame(animate);
-        }}
+        }
 
-        function stopAndReset() {{
+        function stopAndReset() {
             if (animId) cancelAnimationFrame(animId);
             isSpinning = false;
             document.getElementById("spin_timer").innerText = "00:00";
             document.getElementById("winner_banner").style.color = "#facc15";
             document.getElementById("winner_banner").innerText = "⏹ Spin stopped. Ready!";
-        }}
+        }
 
-        function removeLastWinner() {{
-            if (lastWinnerIndex > -1 && names.length > 1) {{
+        function removeLastWinner() {
+            if (lastWinnerIndex > -1 && names.length > 1) {
                 names.splice(lastWinnerIndex, 1);
                 lastWinnerIndex = -1;
                 document.getElementById("removeBtn").style.display = "none";
                 document.getElementById("winner_banner").innerText = "✅ Winner removed from wheel!";
                 drawWheel();
-            }}
-        }}
+            }
+        }
 
         drawWheel();
         </script>
@@ -614,8 +646,8 @@ with main_tab_batcher:
         <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; color: #e2e8f0; font-size: 14px;">
             <b>💡 QUICK STREAM GUIDE:</b> 
             &nbsp;1️⃣ Paste Notepad List &nbsp;→&nbsp; 
-            2️⃣ Run Call-Out Timer & Check Attendance &nbsp;→&nbsp; 
-            3️⃣ Gift Batch 1 & Save Tomorrow's Backup!
+            &nbsp;2️⃣ Run Call-Out Timer & Check Attendance &nbsp;→&nbsp; 
+            &nbsp;3️⃣ Gift Batch 1 & Save Tomorrow's Backup!
         </div>
     """, unsafe_allow_html=True)
 
