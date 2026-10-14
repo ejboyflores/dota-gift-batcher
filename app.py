@@ -89,7 +89,7 @@ Paul Panganoron"""
 main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
     "📦 1. Post-Stream Gift Batcher",
     "🎡 2. Normal Spin the Wheel",
-    "👑 3. Last Man Standing (Arcana Arena)"
+    "👑 3. Last Man Standing (Main Event)"
 ])
 
 # ==============================================================================
@@ -100,7 +100,7 @@ with main_tab_lms:
 
     with lms_left:
         st.subheader("👑 Main Event Setup")
-        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Manifold Paradox (PA Arcana)", key="lms_arcana_input")
+        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Item Name", key="lms_arcana_input")
         lms_raw = st.text_area("Paste Finalists / Participants (1 per line):", value=default_wheel_names, height=220, key="lms_names_input")
         lms_participants = [p.strip() for p in lms_raw.split("\n") if p.strip()]
         st.caption(f"⚔️ Total Fighters Entering Arena: **{len(lms_participants)}** *(Every spin ELIMINATES 1 person until only 1 Champion remains!)*")
