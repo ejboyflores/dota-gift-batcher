@@ -8,8 +8,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Dota 2 Gift Studio", page_icon="🎁", layout="wide")
 
-st.markdown(
-    """
+st.markdown("""
     <style>
     .block-container { padding-top: 1.2rem; padding-bottom: 2rem; max-width: 1400px; }
     .stTabs [data-baseweb="tab-list"] { gap: 8px; }
@@ -20,9 +19,7 @@ st.markdown(
         font-weight: 600;
     }
     </style>
-""",
-    unsafe_allow_html=True,
-)
+""", unsafe_allow_html=True)
 
 st.title("🎁 Paul's Dota 2 Giveaway & Gifting Studio")
 
@@ -60,7 +57,7 @@ Viewer 8"""
 main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
     "📦 1. Post-Stream Gift Batcher (8/Day Queue)",
     "🎡 2. Normal Spin the Wheel (1 Spin = Winner)",
-    "👑 3. Main Event: Last Man Standing (Arcana / Big Prize)",
+    "👑 3. Main Event: Last Man Standing (Arcana / Big Prize)"
 ])
 
 # ==============================================================================
@@ -71,54 +68,27 @@ with main_tab_lms:
 
     with lms_left:
         st.subheader("👑 Main Event Setup")
-        arcana_prize = st.text_input(
-            "Grand Prize Name (Shown on Banner):",
-            value="Manifold Paradox (PA Arcana)",
-        )
-        lms_raw = st.text_area(
-            "Paste Finalists / Participants (1 per line):",
-            value=default_wheel_names,
-            height=220,
-            key="lms_names_input",
-        )
+        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Manifold Paradox (PA Arcana)")
+        lms_raw = st.text_area("Paste Finalists / Participants (1 per line):", value=default_wheel_names, height=220, key="lms_names_input")
         lms_participants = [p.strip() for p in lms_raw.split("\n") if p.strip()]
-        st.caption(
-            f"⚔️ Total Fighters Entering Arena: **{len(lms_participants)}** *(Every spin ELIMINATES 1 person until only 1 Champion remains!)*"
-        )
+        st.caption(f"⚔️ Total Fighters Entering Arena: **{len(lms_participants)}** *(Every spin ELIMINATES 1 person until only 1 Champion remains!)*")
 
         st.divider()
         st.subheader("🏆 Send Champion to Gifting Queue")
-        lms_winner_input = st.text_input(
-            "Champion Name:",
-            placeholder="Type the Last Man Standing winner...",
-            key="lms_win_box",
-        )
-        if st.button(
-            "➕ Add Grand Champion to Queue",
-            type="primary",
-            width="stretch",
-            key="lms_add_btn",
-        ):
+        lms_winner_input = st.text_input("Champion Name:", placeholder="Type the Last Man Standing winner...", key="lms_win_box")
+        if st.button("➕ Add Grand Champion to Queue", type="primary", width="stretch", key="lms_add_btn"):
             if lms_winner_input.strip():
-                st.session_state.notepad_queue = (
-                    st.session_state.notepad_queue.rstrip()
-                    + f"\n{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}"
-                )
-                st.success(
-                    f"✅ Added **{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}** to your Gifting Queue!"
-                )
+                st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}"
+                st.success(f"✅ Added **{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}** to your Gifting Queue!")
             else:
                 st.warning("Type the Champion's name first!")
 
     with lms_right:
-        lms_json = json.dumps(
-            lms_participants if len(lms_participants) >= 2 else ["Player 1", "Player 2"]
-        )
-
+        lms_json = json.dumps(lms_participants if len(lms_participants) >= 2 else ["Player 1", "Player 2"])
+        
         lms_html = f"""
         <div id="lmsFullscreenContainer" style="background: linear-gradient(145deg, #1a0b0e, #2a1215); padding: 18px; border-radius: 16px; border: 2px solid #b91c1c; color: white; font-family: system-ui, -apple-system, sans-serif; box-shadow: 0 12px 30px rgba(185,28,28,0.25);">
             
-            <!-- Grand Prize Header & Fullscreen Button -->
             <div style="display: flex; justify-content: space-between; align-items: center; background: #0f0507; padding: 10px 16px; border-radius: 10px; border: 1px solid #7f1d1d; margin-bottom: 12px;">
                 <div>
                     <div style="font-size: 11px; color: #fca5a5; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">🔥 LAST MAN STANDING — GRAND PRIZE:</div>
@@ -133,21 +103,16 @@ with main_tab_lms:
                 </div>
             </div>
 
-            <!-- Dynamic Status Bar -->
             <div id="lms_banner" style="width: 100%; text-align: center; background: #450a0a; padding: 10px; border-radius: 8px; font-size: 18px; font-weight: 900; color: #fef08a; margin-bottom: 14px; border: 1px solid #dc2626; box-sizing: border-box;">
                 💀 Whoever the arrow lands on is ELIMINATED!
             </div>
 
-            <!-- Wheel + Graveyard Split Layout -->
             <div style="display: flex; gap: 18px; align-items: center; justify-content: center; flex-wrap: wrap;">
-                
-                <!-- Wheel Canvas -->
                 <div style="position: relative; width: 320px; height: 320px;">
                     <div style="position: absolute; right: -16px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-right: 28px solid #fde047; z-index: 10; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.8));"></div>
                     <canvas id="lmsCanvas" width="320" height="320"></canvas>
                 </div>
 
-                <!-- Elimination Graveyard Log -->
                 <div style="flex: 1; min-width: 210px; height: 310px; background: #0f0507; border: 1px solid #451a1c; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column;">
                     <div style="font-size: 12px; font-weight: 800; color: #f87171; text-transform: uppercase; border-bottom: 1px solid #3f1517; padding-bottom: 6px; margin-bottom: 8px;">
                         🪦 Eliminated Graveyard
@@ -158,26 +123,15 @@ with main_tab_lms:
                 </div>
             </div>
 
-            <!-- Controls -->
             <div style="font-size: 11px; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; text-align: center; margin-top: 14px; margin-bottom: 8px;">
                 Spin to Eliminate 1 Player (Or Run Auto-Battle Royale!):
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                <button onclick="spinEliminate(3)" style="background: #dc2626; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer;">
-                    💀 3s Fast KO
-                </button>
-                <button onclick="spinEliminate(8)" style="background: #ea580c; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer;">
-                    🔥 8s KO Spin
-                </button>
-                <button onclick="spinEliminate(20)" style="background: #eab308; color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 900; cursor: pointer;">
-                    ⏱️ 20s Suspense KO
-                </button>
-                <button onclick="toggleAutoRoyale()" id="autoBtn" style="background: linear-gradient(90deg, #9333ea, #db2777); color: white; border: 1px solid #f472b6; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(219,39,119,0.4);">
-                    ⚡ AUTO-BATTLE ROYALE (3s/KO)
-                </button>
-                <button onclick="resetArena()" style="background: #334155; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                    🔄 Reset All
-                </button>
+                <button onclick="spinEliminate(3)" style="background: #dc2626; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer;">💀 3s Fast KO</button>
+                <button onclick="spinEliminate(8)" style="background: #ea580c; color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer;">🔥 8s KO Spin</button>
+                <button onclick="spinEliminate(20)" style="background: #eab308; color: #0f172a; border: none; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 900; cursor: pointer;">⏱️ 20s Suspense KO</button>
+                <button onclick="toggleAutoRoyale()" id="autoBtn" style="background: linear-gradient(90deg, #9333ea, #db2777); color: white; border: 1px solid #f472b6; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(219,39,119,0.4);">⚡ AUTO-BATTLE ROYALE (3s/KO)</button>
+                <button onclick="resetArena()" style="background: #334155; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">🔄 Reset All</button>
             </div>
         </div>
 
@@ -196,27 +150,27 @@ with main_tab_lms:
         let autoTimeout = null;
         let audioCtx = null;
 
-        function toggleFullscreen(elementId) {
+        function toggleFullscreen(elementId) {{
             const elem = document.getElementById(elementId);
-            if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) { elem.requestFullscreen(); }
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-            } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); }
-            }
-        }
+            if (!document.fullscreenElement) {{
+                if (elem.requestFullscreen) {{ elem.requestFullscreen(); }}
+                else if (elem.webkitRequestFullscreen) {{ elem.webkitRequestFullscreen(); }}
+            }} else {{
+                if (document.exitFullscreen) {{ document.exitFullscreen(); }}
+            }}
+        }}
 
-        function getAudio() {
-            if (!audioCtx) {
+        function getAudio() {{
+            if (!audioCtx) {{
                 const AC = window.AudioContext || window.webkitAudioContext;
                 audioCtx = new AC();
-            }
+            }}
             if (audioCtx.state === 'suspended') audioCtx.resume();
             return audioCtx;
-        }
+        }}
 
-        function playSound(freq, dur, type="sine", vol=0.1) {
-            try {
+        function playSound(freq, dur, type="sine", vol=0.1) {{
+            try {{
                 const ac = getAudio();
                 const osc = ac.createOscillator();
                 const gain = ac.createGain();
@@ -227,16 +181,16 @@ with main_tab_lms:
                 gain.connect(ac.destination);
                 osc.start();
                 osc.stop(ac.currentTime + dur / 1000);
-            } catch(e) {}
-        }
+            }} catch(e) {{}}
+        }}
 
-        function drawLmsWheel() {
+        function drawLmsWheel() {{
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const num = alive.length;
             const center = canvas.width / 2;
             const radius = center - 6;
 
-            if (num === 1) {
+            if (num === 1) {{
                 ctx.beginPath();
                 ctx.fillStyle = "#eab308";
                 ctx.arc(center, center, radius, 0, 2 * Math.PI);
@@ -252,10 +206,10 @@ with main_tab_lms:
                 ctx.font = "900 26px sans-serif";
                 ctx.fillText(alive[0], center, center + 24);
                 return;
-            }
+            }}
 
             const arc = (2 * Math.PI) / num;
-            for (let i = 0; i < num; i++) {
+            for (let i = 0; i < num; i++) {{
                 const angle = currentAngle + i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = lmsColors[i % lmsColors.length];
@@ -276,7 +230,7 @@ with main_tab_lms:
                 let label = alive[i].length > 16 ? alive[i].substring(0, 14) + ".." : alive[i];
                 ctx.fillText(label, radius - 14, 5);
                 ctx.restore();
-            }
+            }}
 
             ctx.beginPath();
             ctx.fillStyle = "#0f0507";
@@ -285,24 +239,24 @@ with main_tab_lms:
             ctx.strokeStyle = "#fde047";
             ctx.lineWidth = 3;
             ctx.stroke();
-        }
+        }}
 
-        function updateGraveyardUI() {
+        function updateGraveyardUI() {{
             document.getElementById("alive_counter").innerText = alive.length;
             const listEl = document.getElementById("graveyard_list");
-            if (graveyard.length === 0) {
+            if (graveyard.length === 0) {{
                 listEl.innerHTML = '<div style="color: #64748b; font-style: italic; font-size: 12px;">No eliminations yet...</div>';
                 return;
-            }
+            }}
             listEl.innerHTML = graveyard.map(item => 
                 `<div style="background: #1f090d; padding: 5px 8px; border-radius: 5px; border-left: 3px solid #ef4444; display: flex; justify-content: space-between;">
-                    <span style="text-decoration: line-through; color: #fca5a5;">💀 ${item.name}</span>
-                    <span style="color: #94a3b8; font-size: 11px; font-weight: bold;">#${item.rank}</span>
+                    <span style="text-decoration: line-through; color: #fca5a5;">💀 ${{item.name}}</span>
+                    <span style="color: #94a3b8; font-size: 11px; font-weight: bold;">#${{item.rank}}</span>
                 </div>`
             ).join("");
-        }
+        }}
 
-        function spinEliminate(seconds) {
+        function spinEliminate(seconds) {{
             if (isSpinning || alive.length <= 1) return;
             isSpinning = true;
 
@@ -317,7 +271,7 @@ with main_tab_lms:
             const banner = document.getElementById("lms_banner");
             banner.style.color = "#fef08a";
 
-            function animate(now) {
+            function animate(now) {{
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const easeOut = 1 - Math.pow(1 - progress, 4);
@@ -330,24 +284,24 @@ with main_tab_lms:
 
                 banner.innerText = "🎯 In Danger: " + alive[currentSlice] + "...";
 
-                if (currentSlice !== lastSlice && progress < 0.995) {
+                if (currentSlice !== lastSlice && progress < 0.995) {{
                     playSound(480, 20, "triangle", 0.08);
                     lastSlice = currentSlice;
-                }
+                }}
 
-                if (progress < 1) {
+                if (progress < 1) {{
                     animId = requestAnimationFrame(animate);
-                } else {
+                }} else {{
                     isSpinning = false;
                     const eliminatedName = alive[currentSlice];
                     const finishRank = alive.length;
 
                     alive.splice(currentSlice, 1);
-                    graveyard.unshift({ name: eliminatedName, rank: finishRank });
+                    graveyard.unshift({{ name: eliminatedName, rank: finishRank }});
                     updateGraveyardUI();
                     drawLmsWheel();
 
-                    if (alive.length === 1) {
+                    if (alive.length === 1) {{
                         autoMode = false;
                         document.getElementById("autoBtn").innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
                         banner.style.background = "#14532d";
@@ -358,38 +312,38 @@ with main_tab_lms:
                         setTimeout(() => playSound(659, 150, "sine", 0.15), 160);
                         setTimeout(() => playSound(784, 150, "sine", 0.15), 320);
                         setTimeout(() => playSound(1046, 450, "sine", 0.2), 480);
-                    } else {
+                    }} else {{
                         banner.style.color = "#f87171";
                         banner.innerText = "💀 ELIMINATED: " + eliminatedName + " (#" + finishRank + " Place) — " + alive.length + " Left!";
                         playSound(190, 300, "sawtooth", 0.12);
 
-                        if (autoMode && alive.length > 1) {
-                            autoTimeout = setTimeout(() => {
+                        if (autoMode && alive.length > 1) {{
+                            autoTimeout = setTimeout(() => {{
                                 if (autoMode) spinEliminate(3);
-                            }, 2200);
-                        }
-                    }
-                }
-            }
+                            }}, 2200);
+                        }}
+                    }}
+                }}
+            }}
             animId = requestAnimationFrame(animate);
-        }
+        }}
 
-        function toggleAutoRoyale() {
+        function toggleAutoRoyale() {{
             if (alive.length <= 1) return;
             autoMode = !autoMode;
             const btn = document.getElementById("autoBtn");
-            if (autoMode) {
+            if (autoMode) {{
                 btn.innerText = "⏸ PAUSE AUTO-ROYALE";
                 btn.style.background = "#dc2626";
                 if (!isSpinning) spinEliminate(3);
-            } else {
+            }} else {{
                 btn.innerText = "⚡ AUTO-BATTLE ROYALE (3s/KO)";
                 btn.style.background = "linear-gradient(90deg, #9333ea, #db2777)";
                 if (autoTimeout) clearTimeout(autoTimeout);
-            }
-        }
+            }}
+        }}
 
-        function resetArena() {
+        function resetArena() {{
             if (animId) cancelAnimationFrame(animId);
             if (autoTimeout) clearTimeout(autoTimeout);
             isSpinning = false;
@@ -405,7 +359,7 @@ with main_tab_lms:
             banner.innerText = "💀 Arena Reset! Whoever the arrow lands on is ELIMINATED!";
             updateGraveyardUI();
             drawLmsWheel();
-        }
+        }}
 
         drawLmsWheel();
         </script>
@@ -413,44 +367,25 @@ with main_tab_lms:
         components.html(lms_html, height=555)
 
 # ==============================================================================
-# TAB 2: NORMAL LIVE STREAM SPIN THE WHEEL (WITH FULLSCREEN BUTTON)
+# TAB 2: NORMAL LIVE STREAM SPIN THE WHEEL
 # ==============================================================================
 with main_tab_wheel:
     w_left, w_right = st.columns([1, 1.55], gap="large")
 
     with w_left:
         st.subheader("👥 1. Wheel Participants")
-        wheel_raw = st.text_area(
-            "Paste viewer names here (1 name per line):",
-            value=default_wheel_names,
-            height=240,
-            key="normal_wheel_input",
-        )
+        wheel_raw = st.text_area("Paste viewer names here (1 name per line):", value=default_wheel_names, height=240, key="normal_wheel_input")
         participants = [p.strip() for p in wheel_raw.split("\n") if p.strip()]
         st.caption(f"🎯 Total viewers on wheel: **{len(participants)}**")
 
         st.divider()
         st.subheader("🏆 2. Quick-Add Winner to Queue")
-        st.caption(
-            "When the wheel stops, type or paste the winner's name below to automatically add **`Name - 1`** to the bottom of your Notepad list!"
-        )
-        new_winner = st.text_input(
-            "Winner Name:", placeholder="e.g. Juan Dela Cruz", key="normal_win_box"
-        )
-        if st.button(
-            "➕ Add Winner to Bottom of Queue",
-            type="primary",
-            width="stretch",
-            key="normal_add_btn",
-        ):
+        st.caption("When the wheel stops, type or paste the winner's name below to automatically add **`Name - 1`** to the bottom of your Notepad list!")
+        new_winner = st.text_input("Winner Name:", placeholder="e.g. Juan Dela Cruz", key="normal_win_box")
+        if st.button("➕ Add Winner to Bottom of Queue", type="primary", width="stretch", key="normal_add_btn"):
             if new_winner.strip():
-                st.session_state.notepad_queue = (
-                    st.session_state.notepad_queue.rstrip()
-                    + f"\n{new_winner.strip()} - 1"
-                )
-                st.success(
-                    f"✅ Added **{new_winner.strip()} - 1** to the bottom of your Gifting Queue!"
-                )
+                st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{new_winner.strip()} - 1"
+                st.success(f"✅ Added **{new_winner.strip()} - 1** to the bottom of your Gifting Queue!")
             else:
                 st.warning("Please enter a winner's name first.")
 
@@ -480,21 +415,11 @@ with main_tab_wheel:
                 Choose Spin Duration:
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                <button onclick="spinWheel(5)" style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer;">
-                    ⚡ 5s Quick
-                </button>
-                <button onclick="spinWheel(15)" style="background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer;">
-                    🔥 15s Spin
-                </button>
-                <button onclick="spinWheel(30)" style="background: #f59e0b; color: #0f172a; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">
-                    ⏱️ 30 Sec Spin
-                </button>
-                <button onclick="spinWheel(60)" style="background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(239,68,68,0.3);">
-                    🚨 1 Min Spin (60s)
-                </button>
-                <button onclick="stopAndReset()" style="background: #475569; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">
-                    ⏹ Stop
-                </button>
+                <button onclick="spinWheel(5)" style="background: #3b82f6; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer;">⚡ 5s Quick</button>
+                <button onclick="spinWheel(15)" style="background: #10b981; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer;">🔥 15s Spin</button>
+                <button onclick="spinWheel(30)" style="background: #f59e0b; color: #0f172a; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(245,158,11,0.3);">⏱️ 30 Sec Spin</button>
+                <button onclick="spinWheel(60)" style="background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 10px rgba(239,68,68,0.3);">🚨 1 Min Spin (60s)</button>
+                <button onclick="stopAndReset()" style="background: #475569; color: white; border: none; padding: 10px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">⏹ Stop</button>
             </div>
 
             <div style="margin-top: 10px; min-height: 36px;">
@@ -515,29 +440,29 @@ with main_tab_wheel:
         let lastWinnerIndex = -1;
         let sharedAudioCtx = null;
 
-        function toggleFullscreen(elementId) {
+        function toggleFullscreen(elementId) {{
             const elem = document.getElementById(elementId);
-            if (!document.fullscreenElement) {
-                if (elem.requestFullscreen) { elem.requestFullscreen(); }
-                else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
-            } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); }
-            }
-        }
+            if (!document.fullscreenElement) {{
+                if (elem.requestFullscreen) {{ elem.requestFullscreen(); }}
+                else if (elem.webkitRequestFullscreen) {{ elem.webkitRequestFullscreen(); }}
+            }} else {{
+                if (document.exitFullscreen) {{ document.exitFullscreen(); }}
+            }}
+        }}
 
-        function getAudioCtx() {
-            if (!sharedAudioCtx) {
+        function getAudioCtx() {{
+            if (!sharedAudioCtx) {{
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 sharedAudioCtx = new AudioContext();
-            }
-            if (sharedAudioCtx.state === 'suspended') {
+            }}
+            if (sharedAudioCtx.state === 'suspended') {{
                 sharedAudioCtx.resume();
-            }
+            }}
             return sharedAudioCtx;
-        }
+        }}
 
-        function playTick(freq, dur) {
-            try {
+        function playTick(freq, dur) {{
+            try {{
                 const audioCtx = getAudioCtx();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
@@ -547,17 +472,17 @@ with main_tab_wheel:
                 gain.connect(audioCtx.destination);
                 osc.start();
                 osc.stop(audioCtx.currentTime + dur / 1000);
-            } catch(e) {}
-        }
+            }} catch(e) {{}}
+        }}
 
-        function drawWheel() {
+        function drawWheel() {{
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const num = names.length;
             const arc = (2 * Math.PI) / num;
             const center = canvas.width / 2;
             const radius = center - 8;
 
-            for (let i = 0; i < num; i++) {
+            for (let i = 0; i < num; i++) {{
                 const angle = currentAngle + i * arc;
                 ctx.beginPath();
                 ctx.fillStyle = colors[i % colors.length];
@@ -578,7 +503,7 @@ with main_tab_wheel:
                 let label = names[i].length > 17 ? names[i].substring(0, 15) + ".." : names[i];
                 ctx.fillText(label, radius - 14, 5);
                 ctx.restore();
-            }
+            }}
 
             ctx.beginPath();
             ctx.fillStyle = "#0f172a";
@@ -587,15 +512,15 @@ with main_tab_wheel:
             ctx.strokeStyle = "#f8fafc";
             ctx.lineWidth = 3;
             ctx.stroke();
-        }
+        }}
 
-        function formatTime(sec) {
+        function formatTime(sec) {{
             const m = String(Math.floor(sec / 60)).padStart(2, '0');
             const s = String(Math.ceil(sec % 60)).padStart(2, '0');
             return m + ":" + s;
-        }
+        }}
 
-        function spinWheel(seconds) {
+        function spinWheel(seconds) {{
             if (isSpinning || names.length === 0) return;
             isSpinning = true;
             document.getElementById("removeBtn").style.display = "none";
@@ -608,7 +533,7 @@ with main_tab_wheel:
             const startTime = performance.now();
             let lastSlice = -1;
 
-            function animate(now) {
+            function animate(now) {{
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const remainingSec = Math.max(0, (duration - elapsed) / 1000);
@@ -625,47 +550,47 @@ with main_tab_wheel:
 
                 document.getElementById("winner_banner").innerText = "👉 " + names[currentSlice];
 
-                if (currentSlice !== lastSlice && progress < 0.995) {
+                if (currentSlice !== lastSlice && progress < 0.995) {{
                     playTick(540, 20);
                     lastSlice = currentSlice;
-                }
+                }}
 
-                if (progress < 1) {
+                if (progress < 1) {{
                     animId = requestAnimationFrame(animate);
-                } else {
+                }} else {{
                     isSpinning = false;
                     document.getElementById("spin_timer").innerText = "00:00";
                     lastWinnerIndex = currentSlice;
                     const winner = names[lastWinnerIndex];
                     document.getElementById("winner_banner").style.color = "#4ade80";
                     document.getElementById("winner_banner").innerText = "🎉 WINNER: " + winner + "!";
-                    if (names.length > 1) {
+                    if (names.length > 1) {{
                         document.getElementById("removeBtn").style.display = "inline-block";
-                    }
+                    }}
                     playTick(587, 120);
                     setTimeout(() => playTick(880, 350), 150);
-                }
-            }
+                }}
+            }}
             animId = requestAnimationFrame(animate);
-        }
+        }}
 
-        function stopAndReset() {
+        function stopAndReset() {{
             if (animId) cancelAnimationFrame(animId);
             isSpinning = false;
             document.getElementById("spin_timer").innerText = "00:00";
             document.getElementById("winner_banner").style.color = "#facc15";
             document.getElementById("winner_banner").innerText = "⏹ Spin stopped. Ready!";
-        }
+        }}
 
-        function removeLastWinner() {
-            if (lastWinnerIndex > -1 && names.length > 1) {
+        function removeLastWinner() {{
+            if (lastWinnerIndex > -1 && names.length > 1) {{
                 names.splice(lastWinnerIndex, 1);
                 lastWinnerIndex = -1;
                 document.getElementById("removeBtn").style.display = "none";
                 document.getElementById("winner_banner").innerText = "✅ Winner removed from wheel!";
                 drawWheel();
-            }
-        }
+            }}
+        }}
 
         drawWheel();
         </script>
@@ -676,30 +601,16 @@ with main_tab_wheel:
 # TAB 1: POST-STREAM GIFT BATCHER
 # ==============================================================================
 with main_tab_batcher:
-    st.info(
-        "💡 **QUICK GUIDE:** **(Step 1)** Paste your Notepad list → **(Step 2)** Start the timer & uncheck **`Here?`** if a viewer is absent in chat → **(Step 3)** Gift today's 8 winners & copy tomorrow's updated Notepad list!"
-    )
+    st.info("💡 **QUICK GUIDE:** **(Step 1)** Paste your Notepad list → **(Step 2)** Start the timer & uncheck **`Here?`** if a viewer is absent in chat → **(Step 3)** Gift today's 8 winners & copy tomorrow's updated Notepad list!")
 
     with st.expander("📝 STEP 1: Paste Your Notepad List & Settings", expanded=False):
         c1, c2 = st.columns([2.5, 1.5])
         with c1:
-            raw_input = st.text_area(
-                "Copy and paste your entire Notepad file here (`Name - 1`):",
-                key="notepad_queue",
-                height=160,
-            )
+            raw_input = st.text_area("Copy and paste your entire Notepad file here (`Name - 1`):", key="notepad_queue", height=160)
         with c2:
-            default_treasure = st.text_input(
-                "Treasure / Event Name", value="Trove of Terror"
-            )
-            max_gifts = st.number_input(
-                "Steam Daily Gift Limit (Max 8)", min_value=1, max_value=20, value=8
-            )
-            split_multi_to_bottom = st.checkbox(
-                "✅ Fair Queue Mode: Split '- 2' into separate turns",
-                value=True,
-                help="Gives 1 skin now and moves extra wins to the bottom of the line so nobody cuts the queue.",
-            )
+            default_treasure = st.text_input("Treasure / Event Name", value="Trove of Terror")
+            max_gifts = st.number_input("Steam Daily Gift Limit (Max 8)", min_value=1, max_value=20, value=8)
+            split_multi_to_bottom = st.checkbox("✅ Fair Queue Mode: Split '- 2' into separate turns", value=True, help="Gives 1 skin now and moves extra wins to the bottom of the line so nobody cuts the queue.")
 
     def parse_fair_queue(text, fallback_title, split_extras_to_bottom):
         lines = [line.strip() for line in text.split("\n") if line.strip()]
@@ -738,14 +649,12 @@ with main_tab_batcher:
                 "Viewer Name": item["Name"],
                 "Qty": item["Qty"],
                 "Turn / Win #": win_label,
-                "Skin Choice": item["Skin"],
+                "Skin Choice": item["Skin"]
             })
 
         return pd.DataFrame(rows), detected_title
 
-    base_df, final_title = parse_fair_queue(
-        raw_input, default_treasure, split_multi_to_bottom
-    )
+    base_df, final_title = parse_fair_queue(raw_input, default_treasure, split_multi_to_bottom)
 
     left_col, right_col = st.columns([1.15, 1.35], gap="large")
 
@@ -819,9 +728,7 @@ with main_tab_batcher:
         """
         components.html(timer_html, height=95)
 
-        st.caption(
-            "Uncheck **`Here?`** if they are absent (they move to #1 tomorrow). Double-click **`Skin Choice`** to type their hero skin!"
-        )
+        st.caption("Uncheck **`Here?`** if they are absent (they move to #1 tomorrow). Double-click **`Skin Choice`** to type their hero skin!")
 
         if not base_df.empty:
             rollcall_df = st.data_editor(
@@ -834,15 +741,11 @@ with main_tab_batcher:
                     "#": st.column_config.NumberColumn("#", width="small"),
                     "Here?": st.column_config.CheckboxColumn("Here?", width="small"),
                     "Viewer Name": st.column_config.TextColumn("Viewer Name"),
-                    "Qty": st.column_config.NumberColumn(
-                        "Qty", min_value=1, max_value=5, width="small"
-                    ),
+                    "Qty": st.column_config.NumberColumn("Qty", min_value=1, max_value=5, width="small"),
                     "Turn / Win #": st.column_config.TextColumn("Turn"),
-                    "Skin Choice": st.column_config.TextColumn(
-                        "Skin Choice (Type Here)"
-                    ),
+                    "Skin Choice": st.column_config.TextColumn("Skin Choice (Type Here)")
                 },
-                key="rollcall_table",
+                key="rollcall_table"
             )
         else:
             rollcall_df = pd.DataFrame()
@@ -862,20 +765,12 @@ with main_tab_batcher:
             name = row["Viewer Name"]
             qty = int(row["Qty"])
             win_type = row["Turn / Win #"]
-            raw_skin = (
-                str(row["Skin Choice"]).strip()
-                if pd.notna(row["Skin Choice"])
-                else ""
-            )
+            raw_skin = str(row["Skin Choice"]).strip() if pd.notna(row["Skin Choice"]) else ""
             skin_display = raw_skin if raw_skin else treasure_name
             is_here = bool(row["Here?"])
 
             if is_here and batch1_items + qty <= batch_limit:
-                slot_str = (
-                    f"{batch1_items + 1}"
-                    if qty == 1
-                    else f"{batch1_items + 1}-{batch1_items + qty}"
-                )
+                slot_str = f"{batch1_items + 1}" if qty == 1 else f"{batch1_items + 1}-{batch1_items + qty}"
                 parsed_rows.append({
                     "Batch": "Batch 1 (Today)",
                     "Gift #": f"{slot_str} of {batch_limit}",
@@ -884,15 +779,11 @@ with main_tab_batcher:
                     "Turn": win_type,
                     "Skin to Send": skin_display,
                     "Note": "🟢 Send Now",
-                    "Done?": False,
+                    "Done?": False
                 })
                 batch1_items += qty
             else:
-                reason = (
-                    "💤 Absent (First tomorrow!)"
-                    if not is_here
-                    else "⏳ Next Batch"
-                )
+                reason = "💤 Absent (First tomorrow!)" if not is_here else "⏳ Next Batch"
                 remaining_queue.append({
                     "#": q_num,
                     "Name": name,
@@ -900,7 +791,7 @@ with main_tab_batcher:
                     "Turn": win_type,
                     "Skin": skin_display,
                     "RawSkin": raw_skin,
-                    "Note": reason,
+                    "Note": reason
                 })
 
         current_batch = 2
@@ -915,11 +806,7 @@ with main_tab_batcher:
             else:
                 rollover_lines.append(f"{name} - {qty}")
 
-            slot_str = (
-                f"{items_in_batch + 1}"
-                if qty == 1
-                else f"{items_in_batch + 1}-{items_in_batch + qty}"
-            )
+            slot_str = f"{items_in_batch + 1}" if qty == 1 else f"{items_in_batch + 1}-{items_in_batch + qty}"
             parsed_rows.append({
                 "Batch": f"Batch {current_batch}",
                 "Gift #": f"{slot_str} of {batch_limit}",
@@ -928,7 +815,7 @@ with main_tab_batcher:
                 "Turn": item["Turn"],
                 "Skin to Send": item["Skin"],
                 "Note": item["Note"],
-                "Done?": False,
+                "Done?": False
             })
 
             items_in_batch += qty
@@ -936,11 +823,7 @@ with main_tab_batcher:
                 current_batch += 1
                 items_in_batch = 0
 
-        rollover_text = (
-            f"{treasure_name}\n\n" + "\n".join(rollover_lines)
-            if rollover_lines
-            else ""
-        )
+        rollover_text = f"{treasure_name}\n\n" + "\n".join(rollover_lines) if rollover_lines else ""
         return pd.DataFrame(parsed_rows), rollover_text
 
     def create_excel(df):
@@ -952,25 +835,19 @@ with main_tab_batcher:
                 clean_sheet = b_name.replace(" (Today)", "")
                 group.to_excel(writer, index=False, sheet_name=clean_sheet)
 
-            header_fill = PatternFill(
-                start_color="1F2937", end_color="1F2937", fill_type="solid"
-            )
+            header_fill = PatternFill(start_color="1F2937", end_color="1F2937", fill_type="solid")
             header_font = Font(color="FFFFFF", bold=True)
             for _, ws in writer.sheets.items():
                 for cell in ws[1]:
                     cell.fill = header_fill
                     cell.font = header_font
                 for col in ws.columns:
-                    ws.column_dimensions[col[0].column_letter].width = (
-                        max(len(str(c.value or "")) for c in col) + 5
-                    )
+                    ws.column_dimensions[col[0].column_letter].width = max(len(str(c.value or "")) for c in col) + 5
         return output.getvalue()
 
     with right_col:
         st.subheader("🎁 STEP 3: Send Gifts & Save Tomorrow's List")
-        final_df, rollover_text = build_batches(
-            rollcall_df, max_gifts, final_title
-        )
+        final_df, rollover_text = build_batches(rollcall_df, max_gifts, final_title)
 
         if not final_df.empty:
             today_df = final_df[final_df["Batch"] == "Batch 1 (Today)"]
@@ -982,7 +859,7 @@ with main_tab_batcher:
             tab_today, tab_notepad, tab_all = st.tabs([
                 f"1️⃣ Gift Today ({today_count}/{max_gifts})",
                 f"2️⃣ Save for Tomorrow ({leftover_count} left)",
-                "3️⃣ Full Schedule",
+                "3️⃣ Full Schedule"
             ])
 
             with tab_today:
@@ -993,18 +870,11 @@ with main_tab_batcher:
                     "3. Click **`2️⃣ Save for Tomorrow`** when finished!"
                 )
                 st.data_editor(
-                    today_df[[
-                        "Gift #",
-                        "Viewer Name",
-                        "Qty",
-                        "Turn",
-                        "Skin to Send",
-                        "Done?",
-                    ]],
+                    today_df[["Gift #", "Viewer Name", "Qty", "Turn", "Skin to Send", "Done?"]],
                     hide_index=True,
                     width="stretch",
                     height=330,
-                    key="today_checklist",
+                    key="today_checklist"
                 )
 
             with tab_notepad:
@@ -1025,7 +895,7 @@ with main_tab_batcher:
                     final_df.drop(columns=["Done?"]),
                     hide_index=True,
                     width="stretch",
-                    height=330,
+                    height=330
                 )
 
             excel_data = create_excel(final_df)
@@ -1035,5 +905,5 @@ with main_tab_batcher:
                 file_name=f"{final_title.lower().replace(' ', '_')}_batches.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary",
-                width="stretch",
+                width="stretch"
             )
