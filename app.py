@@ -101,19 +101,9 @@ with main_tab_lms:
     with lms_left:
         st.subheader("👑 Main Event Setup")
         arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Item Name", key="lms_arcana_input")
-        lms_raw = st.text_area("Paste Finalists / Participants (1 per line):", value=default_wheel_names, height=220, key="lms_names_input")
+        lms_raw = st.text_area("Paste Finalists / Participants (1 per line):", value=default_wheel_names, height=320, key="lms_names_input")
         lms_participants = [p.strip() for p in lms_raw.split("\n") if p.strip()]
         st.caption(f"⚔️ Total Fighters Entering Arena: **{len(lms_participants)}** *(Every spin ELIMINATES 1 person until only 1 Champion remains!)*")
-
-        st.divider()
-        st.subheader("🏆 Send Champion to Gifting Queue")
-        lms_winner_input = st.text_input("Champion Name:", placeholder="Type the Last Man Standing winner...", key="lms_win_box")
-        if st.button("➕ Add Grand Champion to Queue", type="primary", use_container_width=True, key="lms_add_btn"):
-            if lms_winner_input.strip():
-                st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}"
-                st.success(f"✅ Added **{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}** to your Gifting Queue!")
-            else:
-                st.warning("Type the Champion's name first!")
 
     with lms_right:
         lms_json = json.dumps(lms_participants if len(lms_participants) >= 2 else ["Player 1", "Player 2"])
@@ -662,7 +652,6 @@ with main_tab_wheel:
 # TAB 1: POST-STREAM GIFT BATCHER
 # ==============================================================================
 with main_tab_batcher:
-    # Polished Guide Banner replacing messy markdown styling
     st.markdown("""
         <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; color: #e2e8f0; font-size: 14px;">
             <b>💡 QUICK STREAM GUIDE:</b> 
