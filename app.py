@@ -47,7 +47,7 @@ st.markdown("""
 
 st.title("🎁 Paul's Dota 2 Giveaway & Gifting Studio")
 
-default_text = """Trove of Terror
+default_text = """
 
 Joseph Estobo - 1
 Julius Durango - 1
