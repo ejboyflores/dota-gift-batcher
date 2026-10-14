@@ -27,7 +27,7 @@ default_text = """Trove of Terror
 
 Joseph Estobo - 1
 Julius Durango - 1
-Ren Ren- 2
+Ren Ren - 2
 Mark louie - 1
 Adrian Libres - 1
 Eijie Agodera - 1
@@ -38,7 +38,7 @@ Xyr john - 1
 Ejboy flores - 1
 Edgardo Jr - 1
 Chito Dagreat - 2
-Ariel Marquez -1
+Ariel Marquez - 1
 Carl Villanueva - 1
 Paul Panganoron - 1"""
 
@@ -76,7 +76,7 @@ with main_tab_lms:
 
     with lms_left:
         st.subheader("👑 Main Event Setup")
-        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Manifold Paradox (PA Arcana)")
+        arcana_prize = st.text_input("Grand Prize Name (Shown on Banner):", value="Manifold Paradox (PA Arcana)", key="lms_arcana_input")
         lms_raw = st.text_area("Paste Finalists / Participants (1 per line):", value=default_wheel_names, height=220, key="lms_names_input")
         lms_participants = [p.strip() for p in lms_raw.split("\n") if p.strip()]
         st.caption(f"⚔️ Total Fighters Entering Arena: **{len(lms_participants)}** *(Every spin ELIMINATES 1 person until only 1 Champion remains!)*")
@@ -84,7 +84,7 @@ with main_tab_lms:
         st.divider()
         st.subheader("🏆 Send Champion to Gifting Queue")
         lms_winner_input = st.text_input("Champion Name:", placeholder="Type the Last Man Standing winner...", key="lms_win_box")
-        if st.button("➕ Add Grand Champion to Queue", type="primary", width="stretch", key="lms_add_btn"):
+        if st.button("➕ Add Grand Champion to Queue", type="primary", use_container_width=True, key="lms_add_btn"):
             if lms_winner_input.strip():
                 st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}"
                 st.success(f"✅ Added **{lms_winner_input.strip()} - 1 - {arcana_prize.strip()}** to your Gifting Queue!")
@@ -387,13 +387,19 @@ with main_tab_wheel:
         st.caption(f"🎯 Total viewers on wheel: **{len(participants)}**")
 
         st.divider()
-        st.subheader("🏆 2. Quick-Add Winner to Queue")
-        st.caption("When the wheel stops, type or paste the winner's name below to automatically add **`Name - 1`** to the bottom of your Notepad list!")
+        st.subheader("🎁 2. Normal Spin Prize Setup")
+        normal_prize = st.text_input("Item to Give (Normal Spin):", value="Trove of Terror", key="normal_prize_input")
+        st.caption("When the winner is picked, their name and this item will automatically be queued together.")
+
+        st.divider()
+        st.subheader("🏆 3. Quick-Add Winner to Queue")
+        st.caption("When the wheel stops, type or paste the winner's name below to automatically add **`Name - 1 - [Prize]`** to your Notepad list!")
         new_winner = st.text_input("Winner Name:", placeholder="e.g. Juan Dela Cruz", key="normal_win_box")
-        if st.button("➕ Add Winner to Bottom of Queue", type="primary", width="stretch", key="normal_add_btn"):
+        if st.button("➕ Add Winner to Bottom of Queue", type="primary", use_container_width=True, key="normal_add_btn"):
             if new_winner.strip():
-                st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{new_winner.strip()} - 1"
-                st.success(f"✅ Added **{new_winner.strip()} - 1** to the bottom of your Gifting Queue!")
+                item_to_add = normal_prize.strip() if normal_prize.strip() else "1"
+                st.session_state.notepad_queue = st.session_state.notepad_queue.rstrip() + f"\n{new_winner.strip()} - 1 - {item_to_add}"
+                st.success(f"✅ Added **{new_winner.strip()} - 1 - {item_to_add}** to the bottom of your Gifting Queue!")
             else:
                 st.warning("Please enter a winner's name first.")
 
@@ -404,7 +410,7 @@ with main_tab_wheel:
             
             <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: #090d16; padding: 10px 18px; border-radius: 10px; border: 1px solid #1e293b; margin-bottom: 14px; box-sizing: border-box;">
                 <div id="winner_banner" style="font-size: 18px; font-weight: 800; color: #facc15;">
-                    🎰 Select spin duration below!
+                    🎰 Prize: {normal_prize} — Select spin duration below!
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <div id="spin_timer" style="font-size: 18px; font-weight: 900; color: #38bdf8; font-variant-numeric: tabular-nums; background: #1e293b; padding: 4px 10px; border-radius: 6px;">
@@ -742,7 +748,7 @@ with main_tab_batcher:
             rollcall_df = st.data_editor(
                 base_df,
                 hide_index=True,
-                width="stretch",
+                use_container_width=True,
                 height=420,
                 disabled=["#", "Viewer Name", "Turn / Win #"],
                 column_config={
@@ -880,7 +886,7 @@ with main_tab_batcher:
                 st.data_editor(
                     today_df[["Gift #", "Viewer Name", "Qty", "Turn", "Skin to Send", "Done?"]],
                     hide_index=True,
-                    width="stretch",
+                    use_container_width=True,
                     height=330,
                     key="today_checklist"
                 )
@@ -902,7 +908,7 @@ with main_tab_batcher:
                 st.dataframe(
                     final_df.drop(columns=["Done?"]),
                     hide_index=True,
-                    width="stretch",
+                    use_container_width=True,
                     height=330
                 )
 
@@ -913,5 +919,5 @@ with main_tab_batcher:
                 file_name=f"{final_title.lower().replace(' ', '_')}_batches.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 type="primary",
-                width="stretch"
+                use_container_width=True
             )
