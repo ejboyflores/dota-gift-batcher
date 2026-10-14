@@ -46,13 +46,22 @@ if "notepad_queue" not in st.session_state:
     st.session_state.notepad_queue = default_text
 
 default_wheel_names = """Viewer 1
-Viewer 2
-Viewer 3
-Viewer 4
-Viewer 5
-Viewer 6
-Viewer 7
-Viewer 8"""
+Joseph Estobo
+Julius Durango
+Ren Ren
+Mark louie
+Adrian Libres
+Eijie Agodera
+Mardion Lloyd
+Jayson Eunchica
+Prince May
+Xyr john
+Ejboy flores
+Edgardo Jr
+Chito Dagreat
+Ariel Marquez
+Carl Villanueva
+Paul Panganoron"""
 
 main_tab_batcher, main_tab_wheel, main_tab_lms = st.tabs([
     "📦 1. Post-Stream Gift Batcher (8/Day Queue)",
